@@ -1,3 +1,5 @@
+[![CI](https://github.com/ValenciaLimm/student-grading/actions/workflows/ci.yml/badge.svg)](https://github.com/ValenciaLimm/student-grading/actions/workflows/ci.yml)
+
 # Student Grading System
 
 Sistem penilaian mahasiswa berbasis REST API. Dibuat untuk Final Project mata kuliah Software Testing dengan fokus pada automated testing dan continuous integration.
