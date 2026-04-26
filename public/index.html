@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Student Grading System</title>
+<style>
+* { box-sizing: border-box; font-family: system-ui, sans-serif; }
+body { max-width: 900px; margin: 20px auto; padding: 20px; background: #f5f5f5; }
+h1 { color: #2c3e50; }
+.card { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+input, button, select { padding: 8px 12px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+button { background: #8B5CF6; color: white; border: none; cursor: pointer; }
+button:hover { background: #7C3AED; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 8px; text-align: left; border-bottom: 1px solid #eee; }
+th { background: #ecf0f1; }
+.msg { padding: 10px; margin: 10px 0; border-radius: 4px; }
+.success { background: #d4edda; color: #155724; }
+.error { background: #f8d7da; color: #721c24; }
+.grade-A { color: #10B981; font-weight: bold; }
+.grade-B { color: #3B82F6; font-weight: bold; }
+.grade-C { color: #F59E0B; font-weight: bold; }
+.grade-D { color: #EF4444; font-weight: bold; }
+.grade-E { color: #991B1B; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>🎓 Student Grading System</h1>
+<div class="card">
+  <h2>Tambah Mahasiswa</h2>
+  <input id="nim" placeholder="NIM (8-15 digit)">
+  <input id="studentName" placeholder="Nama">
+  <input id="semester" type="number" placeholder="Semester" value="1">
+  <button onclick="addStudent()">Tambah</button>
+  <div id="studentMsg"></div>
+</div>
+<div class="card">
+  <h2>Tambah Mata Kuliah</h2>
+  <input id="courseCode" placeholder="Kode (cth: IF101)">
+  <input id="courseName" placeholder="Nama MK">
+  <input id="credits" type="number" placeholder="SKS" value="3">
+  <button onclick="addCourse()">Tambah</button>
+  <div id="courseMsg"></div>
+</div>
+<div class="card">
+  <h2>Input Nilai</h2>
+  <input id="enrollStudentId" type="number" placeholder="Student ID">
+  <input id="enrollCourseId" type="number" placeholder="Course ID">
+  <input id="score" type="number" placeholder="Nilai (0-100)">
+  <button onclick="enroll()">Simpan Nilai</button>
+  <div id="enrollMsg"></div>
+</div>
+<div class="card">
+  <h2>Transkrip Mahasiswa</h2>
+  <input id="transcriptId" type="number" placeholder="Student ID">
+  <button onclick="getTranscript()">Lihat Transkrip</button>
+  <div id="transcriptResult"></div>
+</div>
+<div class="card">
+  <h2>Daftar Mahasiswa</h2>
+  <button onclick="loadStudents()">Refresh</button>
+  <table id="studentTable"><thead><tr><th>ID</th><th>NIM</th><th>Nama</th><th>Semester</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="card">
+  <h2>Daftar Mata Kuliah</h2>
+  <button onclick="loadCourses()">Refresh</button>
+  <table id="courseTable"><thead><tr><th>ID</th><th>Kode</th><th>Nama</th><th>SKS</th></tr></thead><tbody></tbody></table>
+</div>
+<script>
+const API = "";
+function showMsg(id, text, err) { document.getElementById(id).innerHTML = `<div class="msg ${err?'error':'success'}">${text}</div>`; }
+async function addStudent() {
+  const res = await fetch(API+"/students",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nim:document.getElementById("nim").value,name:document.getElementById("studentName").value,semester:parseInt(document.getElementById("semester").value)})});
+  const d=await res.json(); showMsg("studentMsg",res.ok?`Mahasiswa ditambahkan! ID: ${d.id}`:"Error: "+d.error,!res.ok); if(res.ok)loadStudents();
+}
+async function addCourse() {
+  const res = await fetch(API+"/courses",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:document.getElementById("courseCode").value,name:document.getElementById("courseName").value,credits:parseInt(document.getElementById("credits").value)})});
+  const d=await res.json(); showMsg("courseMsg",res.ok?`MK ditambahkan! ID: ${d.id}`:"Error: "+d.error,!res.ok); if(res.ok)loadCourses();
+}
+async function enroll() {
+  const res = await fetch(API+"/enrollments",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studentId:parseInt(document.getElementById("enrollStudentId").value),courseId:parseInt(document.getElementById("enrollCourseId").value),score:parseFloat(document.getElementById("score").value)})});
+  const d=await res.json(); showMsg("enrollMsg",res.ok?`Nilai disimpan! Grade: ${d.grade}`:"Error: "+d.error,!res.ok);
+}
+async function getTranscript() {
+  const id=document.getElementById("transcriptId").value;
+  const res=await fetch(API+`/transcripts/${id}`);
+  const d=await res.json();
+  if(!res.ok){document.getElementById("transcriptResult").innerHTML=`<div class="msg error">${d.error}</div>`;return;}
+  let html=`<h3>${d.student.name} (${d.student.nim}) - Semester ${d.student.semester}</h3>`;
+  html+=`<table><thead><tr><th>Kode</th><th>Mata Kuliah</th><th>SKS</th><th>Nilai</th><th>Grade</th></tr></thead><tbody>`;
+  d.enrollments.forEach(e=>{html+=`<tr><td>${e.courseCode}</td><td>${e.courseName}</td><td>${e.credits}</td><td>${e.score}</td><td class="grade-${e.grade}">${e.grade}</td></tr>`;});
+  html+=`</tbody></table><p><strong>IPK: ${d.gpa}</strong></p>`;
+  document.getElementById("transcriptResult").innerHTML=html;
+}
+async function loadStudents() {
+  const res=await fetch(API+"/students"); const d=await res.json();
+  document.querySelector("#studentTable tbody").innerHTML=d.map(s=>`<tr><td>${s.id}</td><td>${s.nim}</td><td>${s.name}</td><td>${s.semester}</td></tr>`).join("");
+}
+async function loadCourses() {
+  const res=await fetch(API+"/courses"); const d=await res.json();
+  document.querySelector("#courseTable tbody").innerHTML=d.map(c=>`<tr><td>${c.id}</td><td>${c.code}</td><td>${c.name}</td><td>${c.credits}</td></tr>`).join("");
+}
+loadStudents(); loadCourses();
+</script>
+</body>
+</html>
