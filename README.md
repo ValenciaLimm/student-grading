@@ -1,6 +1,6 @@
-[![CI](https://github.com/ValenciaLimm/student-grading/actions/workflows/ci.yml/badge.svg)](https://github.com/ValenciaLimm/student-grading/actions/workflows/ci.yml)
-
 # Student Grading System
+
+[![CI](https://github.com/ValenciaLimm/student-grading/actions/workflows/ci.yml/badge.svg)](https://github.com/ValenciaLimm/student-grading/actions/workflows/ci.yml)
 
 Sistem penilaian mahasiswa berbasis REST API. Dibuat untuk Final Project mata kuliah Software Testing dengan fokus pada automated testing dan continuous integration.
 
@@ -54,13 +54,14 @@ Setelah server berjalan, buka browser ke http://localhost:3000 untuk mengakses U
 
 ## Strategi Pengujian
 
-Pengujian dibagi menjadi tiga lapisan:
+Pengujian dibagi menjadi empat lapisan:
 
 1. **Unit Test Validators** (tests/validators.test.js) berisi 30 test untuk fungsi murni validasi NIM, nama, nilai, kode MK, semester, perhitungan grade, dan perhitungan IPK.
 2. **Unit Test Services** (tests/services.test.js) berisi 12 test untuk logika bisnis StudentService, CourseService, dan EnrollmentService.
-3. **Integration Test API** (tests/api.test.js) berisi 8 test untuk full HTTP flow menggunakan Supertest.
+3. **Unit Test Database** (tests/db.test.js) berisi 6 test untuk persistence layer termasuk save, load, reset, dan error handling.
+4. **Integration Test API** (tests/api.test.js) berisi 8 test untuk full HTTP flow menggunakan Supertest.
 
-Total 50 test dengan coverage di atas 80 persen (target minimal 60 persen).
+Total 60 test dengan coverage 95.56 persen (target minimal 60 persen).
 
 ---
 
@@ -80,6 +81,7 @@ GitHub Actions otomatis menjalankan test pada setiap push dan pull request. Pipe
 - public/index.html - UI web
 - tests/validators.test.js - unit test validators
 - tests/services.test.js - unit test services
+- tests/db.test.js - unit test database
 - tests/api.test.js - integration test API
 - package.json - konfigurasi npm dan jest
 - README.md - dokumentasi ini
